@@ -1,15 +1,21 @@
-FROM ubuntu:trusty
-MAINTAINER support@tutum.co
+FROM docker:dind
+MAINTAINER Joe Groocock <frebib@gmail.com>
 
-RUN apt-get update && \
-	DEBIAN_FRONTEND=noninteractive apt-get install -yq iptables apt-transport-https ca-certificates ssh git curl make
+ARG GLIBC=2.25-r0
 
-ENV DIND_COMMIT=b8bed8832b77a478360ae946a69dab5e922b194e DOCKER_VERSION=1.9.1 COMPOSE_VERSION=1.5.2
-ADD https://get.docker.com/builds/Linux/x86_64/docker-${DOCKER_VERSION} /usr/bin/docker
-ADD https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind /usr/local/bin/dind
+RUN apk add --no-cache bash device-mapper git iptables openssh udev
+
+# Install glibc for docker-compose
+RUN curl -o /etc/apk/keys/sgerrand.rsa.pub https://raw.githubusercontent.com/sgerrand/alpine-pkg-glibc/master/sgerrand.rsa.pub && \
+    curl -OL https://github.com/sgerrand/alpine-pkg-glibc/releases/download/$GLIBC/glibc-$GLIBC.apk && \
+    apk add --no-cache glibc-$GLIBC.apk && rm glibc-$GLIBC.apk && \
+    ln -s /lib/libz.so.1 /usr/glibc-compat/lib/ && \
+    ln -s /lib/libc.musl-x86_64.so.1 /usr/glibc-compat/lib
+
+# Download and install docker-compose
+ARG COMPOSE_VERSION=1.12.0
 ADD https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-linux-x86_64 /usr/local/bin/docker-compose
-RUN chmod +x /usr/bin/docker /usr/local/bin/dind /usr/local/bin/docker-compose && rm -fr /var/lib/docker/*
-VOLUME /var/lib/docker
+RUN chmod +x /usr/local/bin/docker-compose && rm -fr /var/lib/docker/*
 
 # Store github.com SSH fingerprint
 RUN mkdir -p ~/.ssh && ssh-keyscan -H github.com | tee -a ~/.ssh/known_hosts

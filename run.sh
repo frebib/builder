@@ -28,7 +28,8 @@ print_msg() {
 run_docker() {
 	udevd --daemon
 	print_msg "=> Starting docker"
-	docker daemon \
+
+	dockerd \
 		--host=unix:///var/run/docker.sock \
 		$DOCKER_DAEMON_ARGS > /var/log/docker.log 2>&1 &
 	print_msg "=> Checking docker daemon"
