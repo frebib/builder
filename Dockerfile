@@ -3,7 +3,7 @@ MAINTAINER Joe Groocock <frebib@gmail.com>
 
 ARG GLIBC=2.25-r0
 
-RUN apk add --no-cache bash device-mapper git iptables openssh udev
+RUN apk add --no-cache bash device-mapper git iptables openssh su-exec udev
 
 # Install glibc for docker-compose
 RUN curl -o /etc/apk/keys/sgerrand.rsa.pub https://raw.githubusercontent.com/sgerrand/alpine-pkg-glibc/master/sgerrand.rsa.pub && \
@@ -20,8 +20,10 @@ RUN chmod +x /usr/local/bin/docker-compose && rm -fr /var/lib/docker/*
 # Store github.com SSH fingerprint
 RUN mkdir -p ~/.ssh && ssh-keyscan -H github.com | tee -a ~/.ssh/known_hosts
 
-ENV GIT_CLONE_OPTS="--recursive"
+ENV GIT_CLONE_OPTS="--recursive" \
+    UID=1000 GID=1000
 
 ADD version_list /
-ADD *.sh /
-ENTRYPOINT ["/usr/local/bin/dind", "/run.sh"]
+ADD bin/* /usr/local/bin/
+ENTRYPOINT ["/usr/local/bin/dind", "run-docker"]
+CMD ["build-image"]

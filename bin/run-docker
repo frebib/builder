@@ -67,7 +67,6 @@ if [ -S /var/run/docker.sock ]; then
     export DOCKER_USED=${DOCKER_USED}
     export EXTERNAL_DOCKER=${EXTERNAL_DOCKER}
     export MOUNTED_DOCKER_FOLDER=${MOUNTED_DOCKER_FOLDER}
-    /build.sh "$@"
 else
 	DOCKER_USED="Using docker-in-docker ${DOCKER_VERSION}"
 	if [ "$(ls -A /var/lib/docker)" ]; then
@@ -79,5 +78,16 @@ else
     export EXTERNAL_DOCKER=${EXTERNAL_DOCKER}
     export MOUNTED_DOCKER_FOLDER=${MOUNTED_DOCKER_FOLDER}
     run_docker
-    /build.sh "$@"
 fi
+
+chown root:$GID /var/run/docker.sock
+chmod 664 /var/run/docker.sock
+
+# Allow user to create directories in /
+chown root:$GID /
+chmod g+rw /
+
+print_msg "=> Building image with UID=$UID and GID=$GID"
+
+# Run command as docker user/group
+exec su-exec $UID:$GID "$@"
