@@ -22,7 +22,7 @@ popd >/dev/null
 
 
 print_msg() {
-	echo -e "\e[1m${1}\e[0m"
+	>&2 echo -e "\e[1m${1}\e[0m"
 }
 
 run_docker() {
