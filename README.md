@@ -1,4 +1,4 @@
-frebib/builder
+[frebib/builder](https://hub.docker.com/r/frebib/builder/)
 =============
 
 A docker image that builds, tests and pushes docker images from code repositories.
