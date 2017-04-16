@@ -64,9 +64,6 @@ if [ -S /var/run/docker.sock ]; then
 	docker version > /dev/null 2>&1 || { print_msg "   Failed to connect to docker daemon at /var/run/docker.sock" && exit 1; }
 	EXTERNAL_DOCKER=yes
 	DOCKER_USED="Using external docker ${DOCKER_VERSION} mounted at /var/run/docker.sock"
-    export DOCKER_USED=${DOCKER_USED}
-    export EXTERNAL_DOCKER=${EXTERNAL_DOCKER}
-    export MOUNTED_DOCKER_FOLDER=${MOUNTED_DOCKER_FOLDER}
 else
 	DOCKER_USED="Using docker-in-docker ${DOCKER_VERSION}"
 	if [ "$(ls -A /var/lib/docker)" ]; then
@@ -74,11 +71,11 @@ else
 		MOUNTED_DOCKER_FOLDER=yes
 		DOCKER_USED="Using docker-in-docker with an external /var/lib/docker folder"
 	fi
-    export DOCKER_USED=${DOCKER_USED}
-    export EXTERNAL_DOCKER=${EXTERNAL_DOCKER}
-    export MOUNTED_DOCKER_FOLDER=${MOUNTED_DOCKER_FOLDER}
+
     run_docker
 fi
+
+export DOCKER_USED EXTERNAL_DOCKER MOUNTED_DOCKER_FOLDER
 
 chown root:$GID /var/run/docker.sock
 chmod 664 /var/run/docker.sock
