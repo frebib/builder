@@ -56,6 +56,15 @@ Where:
 * `$EMAIL` (optional) is the email to use to log into the registry using `docker login`
 
 
+# Tagging
+
+Image tags can be statically added to an image via the **$IMAGE_TAGS** environment variable, with multiple tags being space separated, details explained in the [Environment Variables](#environment-variables) section.
+
+Alternatively tags can be generated with the hook *hooks/tag* which is provided so tags can be generated with scripts for the built image. Each new tag should be on a separate line
+
+Regardless of which method by which the tags are provided, the first one provided is used as the default tag for referring to the image in log output and saving the image to file. All tags are expected to be valid docker tags.
+
+
 # Testing
 
 If you want to test your app before building, create a `docker-compose.test.yml` file in your repository root with a service called `sut` which will be run for testing. You can specify another file name in `$TEST_FILENAME` if required. If that container exits successfully (exit code 0), the build will continue; otherwise, the build will fail and the image won't be built nor pushed.
@@ -80,6 +89,7 @@ To speed up testing, you can replace `build: .` in your `sut` service with `imag
 There is the possibility to run scripts before and after some of the build steps to set up your application as required. The following hooks are available (in this order):
 
 * `hooks/post_checkout` (does not run if mounting `/app`)
+* `hooks/tag` (to override the **$IMAGE_TAGS** variable)
 * `hooks/pre_build`
 * `hooks/build` (to override the default **build** step)
 * `hooks/post_build`
@@ -100,6 +110,7 @@ The following environment variables are available for testing, when executing th
 * `$GIT_TAG` which contains the branch/tag/commit being tested
 * `$GIT_SHA1` which contains the commmit hash of the tag being tested
 * `$IMAGE_NAME` which contains the name of the docker repository being built (if defined when launching the container)
+* `$IMAGE_TAGS` which contains a static, space-delimited list of tags for the image
 * `$GIT_CLONE_OPTS` which is the option passed to "git clone", default: `--recursive`
 
 
