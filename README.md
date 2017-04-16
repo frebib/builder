@@ -1,8 +1,8 @@
-tutum/builder
+frebib/builder
 =============
 
 A docker image that builds, tests and pushes docker images from code repositories.
-It is used by the Tutum platform to automate build and tests. Implementation details can be found in this [blog post](http://blog.tutum.co/2015/07/21/cicd-the-docker-way/).
+This image is a continuation of [tutum/builder](https://github.com/tutumcloud/builder), updated to use [library/docker](https://github.com/docker-library/docker) base image for Docker-in-Docker based on the [Alpine Linux project](https://hub.docker.com/_/alpine/).
 
 
 # Usage
