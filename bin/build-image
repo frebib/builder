@@ -194,43 +194,45 @@ TEST=${TEST:-"Tests passed in $(($DATE_DIFF / 60)) minutes and $(($DATE_DIFF % 6
 # (3/3) Push step
 #
 START_DATE=$(date +"%s")
-if [ ! -z "$IMAGE_NAME" ]; then
-	CLEANUP=no
-	if [ ! -z "$USERNAME" ] || [ -f $HOME/.dockercfg ] || [ -f $HOME/.docker/config.json ]; then
-		CLEANUP=yes
-		print_msg "=> Pushing image $IMAGE_NAME"
-		run_hook pre_push
-		if [ -f "hooks/push" ]; then
-			run_hook push
-		else
-			RETRIES=${RETRIES:-5}
-			for TAG in "${TAGS[@]}"; do
-				print_msg "   Pushing tag $IMAGE_UNTAGGED:$TAG"
-				for (( i=0 ; ; i++ )); do
-					if [ ${i} -eq ${RETRIES} ]; then
-						echo "Too many retries: failed to push the image $IMAGE_UNTAGGED:$TAG"
-						exit 1
-					fi
-					docker push "$IMAGE_UNTAGGED:$TAG" && break
-					sleep 1
-				done
-			done
-			run_hook post_push
-			print_msg "   Pushed image $IMAGE_NAME"
-		fi
-	fi
-	if [ -d /images ] && [ -n $SAVE ]; then
-		CLEANUP=yes
-		IMAGE_PATH="/images/$IMAGE_NAME.tar"
-		print_msg "=> Saving image to $IMAGE_PATH"
-		mkdir -p $(dirname "$IMAGE_PATH")
-		docker save this -o "$IMAGE_PATH"
-	fi
+CLEANUP=no
+if [ ! -z "$USERNAME" ] || [ -f $HOME/.dockercfg ] || [ -f $HOME/.docker/config.json ]; then
+    CLEANUP=yes
+    print_msg "=> Pushing image $IMAGE_NAME"
+    run_hook pre_push
+    if [ -f "hooks/push" ]; then
+        run_hook push
+    else
+        RETRIES=${RETRIES:-5}
+        for TAG in "${TAGS[@]}"; do
+            print_msg "   Pushing tag $IMAGE_UNTAGGED:$TAG"
+            for (( i=0 ; ; i++ )); do
+                if [ ${i} -eq ${RETRIES} ]; then
+                    echo "Too many retries: failed to push the image $IMAGE_UNTAGGED:$TAG"
+                    exit 1
+                fi
+                docker push "$IMAGE_UNTAGGED:$TAG" && break
+                sleep 1
+            done
+        done
+        run_hook post_push
+        print_msg "   Pushed image $IMAGE_NAME"
+    fi
+fi
+if [ -d /images ] && [ "$SAVE" = "true" ]; then
+    CLEANUP=yes
+    IMAGE_PATH="/images/$IMAGE_NAME.tar"
+    print_msg "=> Saving image to $IMAGE_PATH"
+    mkdir -p $(dirname "$IMAGE_PATH")
+    docker save this -o "$IMAGE_PATH"
+    PUSH="Image saved to $IMAGE_PATH"
+    print_msg "   $PUSH"
+fi
 
-	if [ "$CLEANUP" != "no" ] && [ "$EXTERNAL_DOCKER" == "no" ] && [ "$MOUNTED_DOCKER_FOLDER" == "no" ]; then
-		print_msg "   Cleaning up images"
-		docker rmi -f $(docker images -q --no-trunc -a) > /dev/null 2>&1 || true
-	fi
+if [ "$CLEANUP" != "no" ]; then
+    if [ "$EXTERNAL_DOCKER" == "no" ] && [ "$MOUNTED_DOCKER_FOLDER" == "no" ]; then
+        print_msg "   Cleaning up images"
+        docker rmi -f $(docker images -q --no-trunc -a) > /dev/null 2>&1 || true
+    fi
 else
 	PUSH="Skipping push/save"
 	print_msg "   $PUSH"

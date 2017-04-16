@@ -112,6 +112,7 @@ The following environment variables are available for testing, when executing th
 * `$IMAGE_NAME` which contains the name of the docker repository being built (if defined when launching the container)
 * `$IMAGE_TAGS` which contains a static, space-delimited list of tags for the image
 * `$GIT_CLONE_OPTS` which is the option passed to "git clone", default: `--recursive`
+* `$SAVE` which when set `true` saves the tagged image to a */images/$repository/$image\_name$tag.tar*
 
 
 # Notes
