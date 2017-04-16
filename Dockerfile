@@ -15,7 +15,7 @@ RUN curl -o /etc/apk/keys/sgerrand.rsa.pub https://raw.githubusercontent.com/sge
 # Download and install docker-compose
 ARG COMPOSE_VERSION=1.12.0
 ADD https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-linux-x86_64 /usr/local/bin/docker-compose
-RUN chmod +x /usr/local/bin/docker-compose && rm -fr /var/lib/docker/*
+RUN chmod 755 /usr/local/bin/docker-compose && rm -fr /var/lib/docker/*
 
 # Store github.com SSH fingerprint
 RUN mkdir -p ~/.ssh && ssh-keyscan -H github.com | tee -a ~/.ssh/known_hosts
