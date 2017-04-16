@@ -25,18 +25,18 @@ run_hook() {
 print_msg "=> Loading docker auth configuration"
 if [ -f /.dockercfg ]; then
 	print_msg "   Using existing configuration in /.dockercfg"
-	ln -s /.dockercfg /root/.dockercfg
+	ln -s /.dockercfg $HOME/.dockercfg
 elif [ -d /.docker ]; then
 	print_msg "   Using existing configuration in /.docker"
-	ln -s /.docker /root/.docker
+	ln -s /.docker $HOME/.docker
 elif [ ! -z "$DOCKERCFG" ]; then
 	print_msg "   Detected configuration in \$DOCKERCFG"
-	echo "$DOCKERCFG" > /root/.dockercfg
+	echo "$DOCKERCFG" > $HOME/.dockercfg
 	unset DOCKERCFG
 elif [ ! -z "$DOCKER_CONFIG" ]; then
 	print_msg "   Detected configuration in \$DOCKER_CONFIG"
-	mkdir -p /root/.docker
-	echo "$DOCKER_CONFIG" > /root/.docker/config.json
+	mkdir -p $HOME/.docker
+	echo "$DOCKER_CONFIG" > $HOME/.docker/config.json
 	unset DOCKER_CONFIG
 elif [ ! -z "$USERNAME" ] && [ ! -z "$PASSWORD" ]; then
 	REGISTRY=$(echo $IMAGE_NAME | tr "/" "\n" | head -n1 | grep "\." || true)
@@ -136,7 +136,7 @@ else
 		docker-compose -f ${TEST_FILENAME} -p $PROJECT_NAME build
 
 		if [ -z "$IMAGE_NAME" ]; then
-			rm -f /root/.dockercfg
+			rm -f $HOME/.dockercfg
 		fi
 
 		docker-compose -f ${TEST_FILENAME} -p $PROJECT_NAME up -d sut
@@ -163,7 +163,7 @@ TEST=${TEST:-"Tests passed in $(($DATE_DIFF / 60)) minutes and $(($DATE_DIFF % 6
 #
 START_DATE=$(date +"%s")
 if [ ! -z "$IMAGE_NAME" ]; then
-	if [ ! -z "$USERNAME" ] || [ -f /root/.dockercfg ] || [ -f /root/.docker/config.json ]; then
+	if [ ! -z "$USERNAME" ] || [ -f $HOME/.dockercfg ] || [ -f $HOME/.docker/config.json ]; then
 		print_msg "=> Pushing image $IMAGE_NAME"
 		run_hook pre_push
 		if [ -f "hooks/push" ]; then

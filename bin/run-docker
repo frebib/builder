@@ -74,17 +74,6 @@ else
 
     run_docker
 fi
-
 export DOCKER_USED EXTERNAL_DOCKER MOUNTED_DOCKER_FOLDER
 
-chown root:$GID /var/run/docker.sock
-chmod 664 /var/run/docker.sock
-
-# Allow user to create directories in /
-chown root:$GID /
-chmod g+rw /
-
-print_msg "=> Building image with UID=$UID and GID=$GID"
-
-# Run command as docker user/group
-exec su-exec $UID:$GID "$@"
+exec "$@"

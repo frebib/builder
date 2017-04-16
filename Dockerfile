@@ -26,4 +26,4 @@ ENV GIT_CLONE_OPTS="--recursive" \
 ADD version_list /
 ADD bin/* /usr/local/bin/
 ENTRYPOINT ["/usr/local/bin/dind", "run-docker"]
-CMD ["build-image"]
+CMD ["as-builder", "build-image"]
