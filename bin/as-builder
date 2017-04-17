@@ -10,8 +10,6 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-chown root:$GID /var/run/docker.sock
-chmod 664 /var/run/docker.sock
 
 #
 # Add user/group matching UID/GID variables
