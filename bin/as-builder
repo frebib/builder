@@ -8,6 +8,17 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
+paths=()
+opts=$(getopt -o 'p:' -- "$@")
+eval set -- "$opts"
+while true; do
+    case "$1" in
+        -p) paths+=("$2");
+            shift 2;;
+        --) shift ; break ;;
+        *) echo "Error parsing arguments" ; exit 1 ;;
+    esac
+done
 
 #
 # Add user/group matching UID/GID variables
@@ -21,7 +32,7 @@ addgroup -g $GID $GROUP
 adduser -s /bin/bash -D -u $UID -G $GROUP $USER
 chown -R $UID:$GID /home/$USER
 
-for file in / /images /src /app /var/run/docker.sock; do
+for file in / /images /src /app /var/run/docker.sock ${paths[@]}; do
 	if ! [ -e "$file" ]; then
 		continue;
 	fi
