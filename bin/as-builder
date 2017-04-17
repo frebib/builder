@@ -1,9 +1,7 @@
 #!/bin/bash
 set -e
 
-print_msg() {
-	>&2 echo -e "\e[1m${1}\e[0m"
-}
+print_msg() { >&2 echo -e "\e[1m${1}\e[0m"; }
 
 if [ "$EUID" -ne 0 ]; then
     echo "=> Error: $(basename $0): this script must be run as root" >&2
