@@ -27,5 +27,5 @@ VOLUME /var/lib/docker
 
 ADD version_list /
 ADD bin/* /usr/local/bin/
-ENTRYPOINT ["/sbin/tini", "run-docker"]
+ENTRYPOINT ["/sbin/tini", "--", "run-docker"]
 CMD ["as-builder", "build-image"]
