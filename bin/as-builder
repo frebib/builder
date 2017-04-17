@@ -8,6 +8,11 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
+if ! id $UNAME &>/dev/null; then
+    print_msg "   Error: The user $UNAME doesn't exist, please run 'add-user' first"
+    exit 8
+fi
+
 paths=()
 opts=$(getopt -o 'p:' -- "$@")
 eval set -- "$opts"
@@ -21,17 +26,8 @@ while true; do
 done
 
 #
-# Add user/group matching UID/GID variables
+# Allow read/write of required files/folders to $UNAME
 #
-USER=builder
-GROUP=docker
-
-deluser $USER 2>/dev/null || true
-delgroup $GROUP 2>/dev/null || true
-addgroup -g $GID $GROUP
-adduser -s /bin/bash -D -u $UID -G $GROUP $USER
-chown -R $UID:$GID /home/$USER
-
 for file in / /images /src /app /var/run/docker.sock ${paths[@]}; do
 	if ! [ -e "$file" ]; then
 		continue;
@@ -44,5 +40,5 @@ done
 #
 # Run command as builder user/group
 #
-print_msg "=> Running with UID=$UID and GID=$GID"
-exec su-exec $UID:$GID "$@"
+print_msg "=> Running command with $UNAME/$GNAME ($*)"
+exec su-exec $UNAME/$GNAME "$@"

@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -e
+
+print_msg() { >&2 echo -e "\e[1m${1}\e[0m"; }
+
+if [ "$EUID" -ne 0 ]; then
+    print_msg "=> Error: $(basename $0): this script must be run as root" >&2
+    exit 1
+fi
+
+#
+# Add user/group matching UID/GID variables
+#
+if [ -z "$UNAME" ] || [ -z "$GNAME" ]; then
+    print_msg "=> Error: \$UNAME or \$GNAME is unset"
+    exit 9
+fi
+
+print_msg "=> Adding user $UNAME/$GNAME ($UID/$GID)"
+
+deluser $UNAME 2>/dev/null || true
+delgroup $GNAME 2>/dev/null || true
+addgroup -g $GID $GNAME
+adduser -s /bin/bash -D -u $UID -G $GNAME $UNAME
+chown -R $UID:$GID /home/$UNAME

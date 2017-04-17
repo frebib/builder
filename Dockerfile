@@ -21,7 +21,9 @@ RUN chmod 755 /usr/local/bin/docker-compose && rm -fr /var/lib/docker/*
 RUN mkdir -p ~/.ssh && ssh-keyscan -H github.com | tee -a ~/.ssh/known_hosts
 
 ENV GIT_CLONE_OPTS="--recursive" \
-    UID=1000 GID=1000
+    UID=1000 GID=1000 \
+    UNAME=builder \
+    GNAME=docker
 
 VOLUME /var/lib/docker
 
