@@ -1,9 +1,9 @@
-FROM docker:dind
+FROM docker:latest
 MAINTAINER Joe Groocock <frebib@gmail.com>
 
 ARG GLIBC=2.25-r0
 
-RUN apk add --no-cache bash device-mapper git iptables openssh su-exec udev
+RUN apk add --no-cache bash device-mapper git iptables openssh su-exec tini udev
 
 # Install glibc for docker-compose
 RUN curl -o /etc/apk/keys/sgerrand.rsa.pub https://raw.githubusercontent.com/sgerrand/alpine-pkg-glibc/master/sgerrand.rsa.pub && \
@@ -23,7 +23,9 @@ RUN mkdir -p ~/.ssh && ssh-keyscan -H github.com | tee -a ~/.ssh/known_hosts
 ENV GIT_CLONE_OPTS="--recursive" \
     UID=1000 GID=1000
 
+VOLUME /var/lib/docker
+
 ADD version_list /
 ADD bin/* /usr/local/bin/
-ENTRYPOINT ["/usr/local/bin/dind", "run-docker"]
+ENTRYPOINT ["/sbin/tini", "run-docker"]
 CMD ["as-builder", "build-image"]
