@@ -3,9 +3,8 @@ set -e
 
 IMAGE_NAME=${IMAGE_NAME:-$1}
 
-print_msg() {
-	>&2 echo -e "\e[1m${1}\e[0m"
-}
+print_msg() { >&2 echo -e "\e[1m${1}\e[0m"; }
+indent()    { sed -e 's|^|   |g'; }
 
 run_hook() {
 	HOOK=hooks/$1
@@ -41,7 +40,7 @@ elif [ ! -z "$DOCKER_CONFIG" ]; then
 elif [ ! -z "$USERNAME" ] && [ ! -z "$PASSWORD" ]; then
 	REGISTRY=$(echo $IMAGE_NAME | tr "/" "\n" | head -n1 | grep "\." || true)
 	print_msg "   Logging into registry using $USERNAME"
-	docker login -u $USERNAME -p $PASSWORD -e ${EMAIL-no-email@test.com} $REGISTRY
+	docker login -u $USERNAME -p $PASSWORD -e ${EMAIL-no-email@test.com} $REGISTRY | indent
 else
 	print_msg "   WARNING: no \$USERNAME/\$PASSWORD or \$DOCKERCFG or \$DOCKER_CONFIG found - unable to load any credentials for pushing/pulling"
 fi
@@ -59,7 +58,7 @@ if [ ! -d /app ]; then
 			chmod 400 ~/.ssh/id_rsa
 		fi
 		print_msg "   Cloning repo from ${GIT_REPO##*@}"
-		git clone ${GIT_CLONE_OPTS} $GIT_REPO /src
+		git clone ${GIT_CLONE_OPTS} $GIT_REPO /src 2>&1 | indent
 		if [ ! -z "$GIT_ID_RSA" ]; then
 			rm -f ~/.ssh/id_rsa
 			unset GIT_ID_RSA
@@ -69,7 +68,7 @@ if [ ! -d /app ]; then
 			exit 1
 		fi
 		cd /src
-		git checkout $GIT_TAG
+		git checkout $GIT_TAG | indent
 		export GIT_SHA1=$(git rev-parse HEAD)
 		export GIT_MSG=$(git log --format=%B -n 1 $GIT_SHA1)
 		print_msg "   Building commit ${GIT_SHA1}"
@@ -77,7 +76,7 @@ if [ ! -d /app ]; then
 		unset GIT_REPO
 	elif [ ! -z "$TGZ_URL" ]; then
 		print_msg "   Downloading $TGZ_URL"
-		curl -sL $TGZ_URL | tar zx -C /src
+		curl -sL $TGZ_URL | tar zx -C /src 2>&1 | indent
 		SOURCE="Building $TGZ_URL"
 	else
 		print_msg "   ERROR: No application found in /app, and no \$GIT_REPO defined"
@@ -139,7 +138,7 @@ else
 			TAG_ARGS+="$IMAGE_UNTAGGED:$tag "
 		done
 	fi
-	docker build --rm --force-rm -t this ${TAG_ARGS[@]} .
+	docker build --rm --force-rm -t this ${TAG_ARGS[@]} . 2>&1 | indent
 fi
 run_hook post_build
 END_DATE=$(date +"%s")
@@ -161,21 +160,21 @@ else
 		print_msg "=> Executing tests in $TEST_FILENAME"
 		IMAGES=$(cat ./${TEST_FILENAME} | grep -v "^#" | grep -v "image: *this" | grep "image:" | awk '{print $2}')
 		if [ ! -z "$IMAGES" ]; then
-			echo $IMAGES | xargs -n1 docker pull
+			echo $IMAGES | xargs -n1 docker pull 2>&1 | indent
 		fi
 
 		PROJECT_NAME=$(echo $HOSTNAME | tr '[:upper:]' '[:lower:]' | sed s/\\.//g | sed s/-//g)
-		docker-compose -f ${TEST_FILENAME} -p $PROJECT_NAME build
+		docker-compose -f ${TEST_FILENAME} -p $PROJECT_NAME build 2>&1 | indent
 
 		if [ -z "$IMAGE_NAME" ]; then
 			rm -f $HOME/.dockercfg
 		fi
 
-		docker-compose -f ${TEST_FILENAME} -p $PROJECT_NAME up -d sut
-		docker logs -f ${PROJECT_NAME}_sut_1
+		docker-compose -f ${TEST_FILENAME} -p $PROJECT_NAME up -d sut 2>&1 | indent
+		docker logs -f ${PROJECT_NAME}_sut_1 2>&1 | indent
 		RET=$(docker wait ${PROJECT_NAME}_sut_1)
-		docker-compose -f ${TEST_FILENAME} -p $PROJECT_NAME kill
-		docker-compose -f ${TEST_FILENAME} -p $PROJECT_NAME rm --force -v
+		docker-compose -f ${TEST_FILENAME} -p $PROJECT_NAME kill 2>&1 | indent
+		docker-compose -f ${TEST_FILENAME} -p $PROJECT_NAME rm --force -v 2>&1 | indent
 		if [ "$RET" != "0" ]; then
 			print_msg "   Tests in $TEST_FILENAME FAILED: $RET"
 			exit 1
@@ -210,7 +209,7 @@ if [ ! -z "$USERNAME" ] || [ -f $HOME/.dockercfg ] || [ -f $HOME/.docker/config.
                     echo "Too many retries: failed to push the image $IMAGE_UNTAGGED:$TAG"
                     exit 1
                 fi
-                docker push "$IMAGE_UNTAGGED:$TAG" && break
+                docker push "$IMAGE_UNTAGGED:$TAG" 2>&1 | indent && break
                 sleep 1
             done
         done
@@ -223,7 +222,7 @@ if [ -d /images ] && [ "$SAVE" = "true" ]; then
     IMAGE_PATH="/images/$IMAGE_NAME.tar"
     print_msg "=> Saving image to $IMAGE_PATH"
     mkdir -p $(dirname "$IMAGE_PATH")
-    docker save this -o "$IMAGE_PATH"
+    docker save this -o "$IMAGE_PATH" 2>&1 | indent
     PUSH="Image saved to $IMAGE_PATH"
     print_msg "   $PUSH"
 fi
@@ -231,7 +230,7 @@ fi
 if [ "$CLEANUP" != "no" ]; then
     if [ "$EXTERNAL_DOCKER" == "no" ] && [ "$MOUNTED_DOCKER_FOLDER" == "no" ]; then
         print_msg "   Cleaning up images"
-        docker rmi -f $(docker images -q --no-trunc -a) > /dev/null 2>&1 || true
+        docker rmi -f $(docker images -q --no-trunc -a) > /dev/null 2>&1 | indent || true
     fi
 else
 	PUSH="Skipping push/save"
