@@ -1,13 +1,26 @@
 #!/usr/bin/env bash
 set -e
 
-IMAGE_NAME=${IMAGE_NAME:-$1}
-
 print_msg() { >&2 echo -e "\e[1m${1}\e[0m"; }
 indent()    { sed -e 's|^|   |g'; }
 
+args=$(getopt -n "$(basename $0)" -o 'h:' -l 'hooks:' -- "$@")
+eval set -- "$args"
+while true; do
+    case "$1" in
+        -h|--hooks)
+            HOOKS_DIR="$2"
+            shift 2;;
+        --) shift; break;;
+        *)  print_msg "=> $(basename $0): There was an error parsing arguments"
+    esac
+done
+
+IMAGE_NAME="${IMAGE_NAME:-$1}"
+HOOKS_DIR="${HOOKS_DIR:-hooks}"
+
 run_hook() {
-	HOOK=hooks/$1
+	HOOK="$HOOKS_DIR/$1"
 	if [ -f "$HOOK" ]; then
 		print_msg "=> Executing $HOOK hook"
 		./$HOOK
@@ -89,9 +102,9 @@ else
 	cp -r /app/. /src
 fi
 cd /src${DOCKERFILE_PATH:-/}
-if [ -d "hooks" ]; then
+if [ -d "$HOOKS_DIR" ]; then
     # Only chmod hooks if there are any
-    find hooks -type f -not -name '.*' | xargs -r chmod +x
+    find "$HOOKS_DIR" -type f -not -name '.*' | xargs -r chmod +x
 fi
 if [ ! -f Dockerfile ]; then
 	print_msg "   WARNING: no Dockerfile detected! Created one using tutum/buildstep"
@@ -128,7 +141,7 @@ fi
 print_msg "=> Building repository"
 START_DATE=$(date +"%s")
 run_hook pre_build
-if [ -f "hooks/build" ]; then
+if [ -f "$HOOKS_DIR/build" ]; then
 	run_hook build
 else
 	TAG_ARGS=()
@@ -150,7 +163,7 @@ BUILD="Image built in $(($DATE_DIFF / 60)) minutes and $(($DATE_DIFF % 60)) seco
 #
 START_DATE=$(date +"%s")
 run_hook pre_test
-if [ -f "hooks/test" ]; then
+if [ -f "$HOOKS_DIR/test" ]; then
 	run_hook test
 else
 	TEST="No tests found"
@@ -198,7 +211,7 @@ if [ ! -z "$USERNAME" ] || [ -f $HOME/.dockercfg ] || [ -f $HOME/.docker/config.
     CLEANUP=yes
     print_msg "=> Pushing image $IMAGE_NAME"
     run_hook pre_push
-    if [ -f "hooks/push" ]; then
+    if [ -f "$HOOKS_DIR/push" ]; then
         run_hook push
     else
         RETRIES=${RETRIES:-5}
