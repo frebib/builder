@@ -10,7 +10,7 @@ eval set -- "$args"
 while true; do
 	case "$1" in
 		-h|--hooks)
-			HOOKS_DIR="$2"
+			HOOKS_DIR+=("$2")
 			shift 2;;
 		--) shift; break;;
 		*)  print_msg "=> $(basename $0): There was an error parsing arguments"
@@ -18,18 +18,40 @@ while true; do
 done
 
 IMAGE_NAME="${IMAGE_NAME:-$1}"
-HOOKS_DIR="${HOOKS_DIR:-hooks}"
+if [ ${#HOOKS_DIR[@]} -eq 0 ]; then
+	IFS=":" read -ra HOOKS_DIR <<< "${HOOKS_DIR:-hooks}"
+fi
 
+find_hook() {
+	# Find the first matching hook
+	for dir in ${HOOKS_DIR[@]}; do
+		HOOK="$dir/$1"
+		if [ -f "$HOOK" -a -x "$HOOK" ]; then
+			echo "$HOOK"
+			return
+		fi
+	done
+	# No hook found, return error
+	return 1
+}
 run_hook() {
-	HOOK="$HOOKS_DIR/$1"
-	if [ -f "$HOOK" ]; then
+	# Errors? What errors?
+	set +e
+
+	# If argument is a valid file and executable, use that instead
+	HOOK="$([ -f "$1" -a -x "$1" ] && echo $1 || find_hook "$1")"
+
+	if [ $? -eq 0 ]; then
+		# If execution reaches here, $HOOK is valid
 		print_msg "=> Executing $HOOK hook"
-		./$HOOK
+		$HOOK
 		if [ $? -ne 0 ]; then
 			print_msg "ERROR: $HOOK failed with exit code $?"
 			exit 1
 		fi
 	fi
+	# You saw nothing
+	set -e
 }
 
 #
@@ -103,10 +125,12 @@ else
 	cp -r /app/. /src
 fi
 cd /src${DOCKERFILE_PATH:-/}
-if [ -d "$HOOKS_DIR" ]; then
-	# Only chmod hooks if there are any
-	find "$HOOKS_DIR" -type f -not -name '.*' | xargs -r chmod +x
-fi
+for DIR in ${HOOKS_DIR[@]}; do
+	if [ -d "$DIR" ]; then
+		# Only chmod hooks if there are any
+		find "$DIR" -type f -not -name '.*' | xargs -r chmod +x
+	fi
+done
 if [ ! -f Dockerfile ]; then
 	print_msg "   WARNING: no Dockerfile detected! Created one using tutum/buildstep"
 	echo "FROM tutum/buildstep" >> Dockerfile
@@ -142,8 +166,8 @@ fi
 print_msg "=> Building repository"
 START_DATE=$(date +"%s")
 run_hook pre_build
-if [ -f "$HOOKS_DIR/build" ]; then
-	run_hook build
+if build="$(find_hook build)"; then
+	run_hook "$build"
 else
 	TAG_ARGS=()
 	if [ -n "$TAGS" ]; then
@@ -164,8 +188,8 @@ BUILD="Image built in $(($DATE_DIFF / 60)) minutes and $(($DATE_DIFF % 60)) seco
 #
 START_DATE=$(date +"%s")
 run_hook pre_test
-if [ -f "$HOOKS_DIR/test" ]; then
-	run_hook test
+if test="$(find_hook test)"; then
+	run_hook "$test"
 else
 	TEST="No tests found"
 	shopt -s nullglob
@@ -212,8 +236,8 @@ if [ ! -z "$USERNAME" ] || [ -f $HOME/.dockercfg ] || [ -f $HOME/.docker/config.
 	CLEANUP=yes
 	print_msg "=> Pushing image $IMAGE_NAME"
 	run_hook pre_push
-	if [ -f "$HOOKS_DIR/push" ]; then
-		run_hook push
+	if push="$(find_hook push)"; then
+		run_hook "$push"
 	else
 		RETRIES=${RETRIES:-5}
 		for TAG in "${TAGS[@]}"; do
