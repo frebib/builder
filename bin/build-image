@@ -2,18 +2,18 @@
 set -e
 
 print_msg() { >&2 echo -e "\e[1m${1}\e[0m"; }
-indent()    { sed -e 's|^|   |g'; }
+indent()	{ sed -e 's|^|   |g'; }
 
 args=$(getopt -n "$(basename $0)" -o 'h:' -l 'hooks:' -- "$@")
 eval set -- "$args"
 while true; do
-    case "$1" in
-        -h|--hooks)
-            HOOKS_DIR="$2"
-            shift 2;;
-        --) shift; break;;
-        *)  print_msg "=> $(basename $0): There was an error parsing arguments"
-    esac
+	case "$1" in
+		-h|--hooks)
+			HOOKS_DIR="$2"
+			shift 2;;
+		--) shift; break;;
+		*)  print_msg "=> $(basename $0): There was an error parsing arguments"
+	esac
 done
 
 IMAGE_NAME="${IMAGE_NAME:-$1}"
@@ -103,8 +103,8 @@ else
 fi
 cd /src${DOCKERFILE_PATH:-/}
 if [ -d "$HOOKS_DIR" ]; then
-    # Only chmod hooks if there are any
-    find "$HOOKS_DIR" -type f -not -name '.*' | xargs -r chmod +x
+	# Only chmod hooks if there are any
+	find "$HOOKS_DIR" -type f -not -name '.*' | xargs -r chmod +x
 fi
 if [ ! -f Dockerfile ]; then
 	print_msg "   WARNING: no Dockerfile detected! Created one using tutum/buildstep"
@@ -116,12 +116,12 @@ fi
 #
 
 if [ -n "$IMAGE_TAGS" ]; then
-    IFS=' ' read -ra TAGS <<< "$IMAGE_TAGS"
+	IFS=' ' read -ra TAGS <<< "$IMAGE_TAGS"
 else
-    IFS=$'\n' TAGS=($(run_hook tag))
+	IFS=$'\n' TAGS=($(run_hook tag))
 fi
 if [ ${#TAGS[@]} -eq 0 ]; then
-    TAGS=('latest')
+	TAGS=('latest')
 fi
 FIRST_TAG="${TAGS[0]}"
 IFS=' '
@@ -208,43 +208,43 @@ TEST=${TEST:-"Tests passed in $(($DATE_DIFF / 60)) minutes and $(($DATE_DIFF % 6
 START_DATE=$(date +"%s")
 CLEANUP=no
 if [ ! -z "$USERNAME" ] || [ -f $HOME/.dockercfg ] || [ -f $HOME/.docker/config.json ]; then
-    CLEANUP=yes
-    print_msg "=> Pushing image $IMAGE_NAME"
-    run_hook pre_push
-    if [ -f "$HOOKS_DIR/push" ]; then
-        run_hook push
-    else
-        RETRIES=${RETRIES:-5}
-        for TAG in "${TAGS[@]}"; do
-            print_msg "   Pushing tag $IMAGE_UNTAGGED:$TAG"
-            for (( i=0 ; ; i++ )); do
-                if [ ${i} -eq ${RETRIES} ]; then
-                    echo "Too many retries: failed to push the image $IMAGE_UNTAGGED:$TAG"
-                    exit 1
-                fi
-                docker push "$IMAGE_UNTAGGED:$TAG" 2>&1 | indent && break
-                sleep 1
-            done
-        done
-        run_hook post_push
-        print_msg "   Pushed image $IMAGE_NAME"
-    fi
+	CLEANUP=yes
+	print_msg "=> Pushing image $IMAGE_NAME"
+	run_hook pre_push
+	if [ -f "$HOOKS_DIR/push" ]; then
+		run_hook push
+	else
+		RETRIES=${RETRIES:-5}
+		for TAG in "${TAGS[@]}"; do
+			print_msg "   Pushing tag $IMAGE_UNTAGGED:$TAG"
+			for (( i=0 ; ; i++ )); do
+				if [ ${i} -eq ${RETRIES} ]; then
+					echo "Too many retries: failed to push the image $IMAGE_UNTAGGED:$TAG"
+					exit 1
+				fi
+				docker push "$IMAGE_UNTAGGED:$TAG" 2>&1 | indent && break
+				sleep 1
+			done
+		done
+		run_hook post_push
+		print_msg "   Pushed image $IMAGE_NAME"
+	fi
 fi
 if [ -d /images ] && [ "$SAVE" = "true" ]; then
-    CLEANUP=yes
-    IMAGE_PATH="/images/$IMAGE_NAME.tar"
-    print_msg "=> Saving image to $IMAGE_PATH"
-    mkdir -p $(dirname "$IMAGE_PATH")
-    docker save this -o "$IMAGE_PATH" 2>&1 | indent
-    PUSH="Image saved to $IMAGE_PATH"
-    print_msg "   $PUSH"
+	CLEANUP=yes
+	IMAGE_PATH="/images/$IMAGE_NAME.tar"
+	print_msg "=> Saving image to $IMAGE_PATH"
+	mkdir -p $(dirname "$IMAGE_PATH")
+	docker save this -o "$IMAGE_PATH" 2>&1 | indent
+	PUSH="Image saved to $IMAGE_PATH"
+	print_msg "   $PUSH"
 fi
 
 if [ "$CLEANUP" != "no" ]; then
-    if [ "$EXTERNAL_DOCKER" == "no" ] && [ "$MOUNTED_DOCKER_FOLDER" == "no" ]; then
-        print_msg "   Cleaning up images"
-        docker rmi -f $(docker images -q --no-trunc -a) > /dev/null 2>&1 | indent || true
-    fi
+	if [ "$EXTERNAL_DOCKER" == "no" ] && [ "$MOUNTED_DOCKER_FOLDER" == "no" ]; then
+		print_msg "   Cleaning up images"
+		docker rmi -f $(docker images -q --no-trunc -a) > /dev/null 2>&1 | indent || true
+	fi
 else
 	PUSH="Skipping push/save"
 	print_msg "   $PUSH"
