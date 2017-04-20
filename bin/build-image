@@ -257,7 +257,7 @@ if [ ! -z "$USERNAME" ] || [ -f $HOME/.dockercfg ] || [ -f $HOME/.docker/config.
 fi
 if [ -d /images ] && [ "$SAVE" = "true" ]; then
 	CLEANUP=yes
-	IMAGE_PATH="/images/$IMAGE_NAME.tar"
+	IMAGE_PATH="/images/${IMAGE_NAME/:/\/}.tar"
 	print_msg "=> Saving image to $IMAGE_PATH"
 	mkdir -p $(dirname "$IMAGE_PATH")
 	docker save this -o "$IMAGE_PATH" 2>&1 | indent
