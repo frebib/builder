@@ -60,10 +60,10 @@ run_hook() {
 print_msg "=> Loading docker auth configuration"
 if [ -f /.dockercfg ]; then
 	print_msg "   Using existing configuration in /.dockercfg"
-	ln -s /.dockercfg $HOME/.dockercfg
+	ln -sfv /.dockercfg $HOME 2>&1 | indent
 elif [ -d /.docker ]; then
 	print_msg "   Using existing configuration in /.docker"
-	ln -s /.docker $HOME/.docker
+	ln -sfv /.docker $HOME 2>&1 | indent
 elif [ ! -z "$DOCKERCFG" ]; then
 	print_msg "   Detected configuration in \$DOCKERCFG"
 	echo "$DOCKERCFG" > $HOME/.dockercfg
