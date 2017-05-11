@@ -1,5 +1,8 @@
-[frebib/builder](https://hub.docker.com/r/frebib/builder/)
+[hub]: https://hub.docker.com/r/frebib/builder
+
+[frebib/builder][hub]
 =============
+[![](https://images.microbadger.com/badges/image/frebib/builder.svg)](https://microbadger.com/images/frebib/builder)[![Docker Pulls](https://img.shields.io/docker/pulls/frebib/builder.svg)][hub][![Docker Stars](https://img.shields.io/docker/stars/frebib/builder.svg)][hub]
 
 A docker image that builds, tests and pushes docker images from code repositories.
 This image is a continuation of [tutum/builder](https://github.com/tutumcloud/builder), updated to use [library/docker](https://github.com/docker-library/docker) base image for Docker-in-Docker based on the [Alpine Linux project](https://hub.docker.com/_/alpine/).
@@ -11,11 +14,11 @@ This image is a continuation of [tutum/builder](https://github.com/tutumcloud/bu
 
 Run the following docker command in the folder that you want to build and push:
 
-	docker run --rm -it --privileged -v $HOME/.docker:/.docker:ro -v $(pwd):/app tutum/builder $IMAGE_NAME
+	docker run --rm -it --privileged -v $HOME/.docker:/.docker:ro -v $(pwd):/app frebib/builder $IMAGE_NAME
 
 Where:
 
-* `$IMAGE_NAME` (optional) is the name of the image to build and push with an optional tag, i.e. `tutum/hello-world:latest`. If not specified, it will be built and tested, but not pushed. It can also be passed in as an environment variable `-e IMAGE_NAME=$IMAGE_NAME`.
+* `$IMAGE_NAME` (optional) is the name of the image to build and push with an optional tag, i.e. `frebib/hello-world:latest`. If not specified, it will be built and tested, but not pushed. It can also be passed in as an environment variable `-e IMAGE_NAME=$IMAGE_NAME`.
 
 This will use the `~/.docker/config.json` file which should be prepopulated with credentials by using `docker login <registry>` in the host. Alternatively, you can use `$USERNAME`, `$PASSWORD` as described below.
 
@@ -24,14 +27,14 @@ This will use the `~/.docker/config.json` file which should be prepopulated with
 
 Run the following docker command:
 
-	docker run --rm -it --privileged -v $HOME/.docker:/.docker:ro -e GIT_REPO=$GIT_REPO -e USERNAME=$USERNAME -e PASSWORD=$PASSWORD -e DOCKERFILE_PATH=$DOCKERFILE_PATH tutum/builder $IMAGE_NAME
+	docker run --rm -it --privileged -v $HOME/.docker:/.docker:ro -e GIT_REPO=$GIT_REPO -e USERNAME=$USERNAME -e PASSWORD=$PASSWORD -e DOCKERFILE_PATH=$DOCKERFILE_PATH frebib/builder $IMAGE_NAME
 
 Where:
 
-* `$GIT_REPO` is the git repository to clone and build, i.e. `https://github.com/tutumcloud/quickstart-python.git`
+* `$GIT_REPO` is the git repository to clone and build, i.e. `https://github.com/frebib/docker-autobuilder.git`
 * `$GIT_TAG` (optional, defaults to `master`) is the tag/branch/commit to checkout after clone, i.e. `master`
 * `$DOCKERFILE_PATH` (optional, defaults to `/`) is the relative path to the root of the repository where the `Dockerfile` is present, i.e. `/`
-* `$IMAGE_NAME` is the name of the image to create with an optional tag, i.e. `tutum/quickstart-python:latest`
+* `$IMAGE_NAME` is the name of the image to create with an optional tag, i.e. `frebib/autobuilder:latest`
 * `$USERNAME` is the username to use to log into the registry using `docker login`
 * `$PASSWORD` is the password to use to log into the registry using `docker login`
 
@@ -43,13 +46,13 @@ If you want to use a SSH key to clone your repository, mount your private SSH ke
 
 Run the following docker command:
 
-	docker run --rm -it --privileged -v $HOME/.docker:/.docker:ro -e TGZ_URL=$TGZ_URL -e DOCKERFILE_PATH=$DOCKERFILE_PATH -e USERNAME=$USERNAME -e PASSWORD=$PASSWORD tutum/builder $IMAGE_NAME
+	docker run --rm -it --privileged -v $HOME/.docker:/.docker:ro -e TGZ_URL=$TGZ_URL -e DOCKERFILE_PATH=$DOCKERFILE_PATH -e USERNAME=$USERNAME -e PASSWORD=$PASSWORD frebib/builder $IMAGE_NAME
 
 Where:
 
-* `$TGZ_URL` is the URL to the compressed tarball (.tgz) to download and build, i.e. `https://github.com/tutumcloud/docker-hello-world/archive/v1.0.tar.gz`
+* `$TGZ_URL` is the URL to the compressed tarball (.tgz) to download and build, i.e. `https://github.com/frebib/docker-hello-world/archive/v1.0.tar.gz`
 * `$DOCKERFILE_PATH` (optional, defaults to `/`) is the relative path to the root of the tarball where the `Dockerfile` is present, i.e. `/docker-hello-world-1.0`
-* `$IMAGE_NAME` is the name of the image to create with an optional tag, i.e. `tutum/hello-world:latest`
+* `$IMAGE_NAME` is the name of the image to create with an optional tag, i.e. `frebib/hello-world:latest`
 * `$USERNAME` is the username to use to log into the registry using `docker login`
 * `$PASSWORD` is the password to use to log into the registry using `docker login`
 
@@ -119,7 +122,7 @@ The following environment variables are available for testing, when executing th
 
 If you want to cache the images used for building and testing, run the following:
 
-	docker run --name builder_cache --entrypoint /bin/true tutum/builder
+	docker run --name builder_cache --entrypoint /bin/true frebib/builder
 
 And then run your builds as above appending `--volumes-from builder_cache` to them to reuse already downloaded image layers.
 
