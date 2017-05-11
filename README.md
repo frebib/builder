@@ -17,14 +17,14 @@ Where:
 
 * `$IMAGE_NAME` (optional) is the name of the image to build and push with an optional tag, i.e. `tutum/hello-world:latest`. If not specified, it will be built and tested, but not pushed. It can also be passed in as an environment variable `-e IMAGE_NAME=$IMAGE_NAME`.
 
-This will use the `~/.docker/config.json` file which should be prepopulated with credentials by using `docker login <registry>` in the host. Alternatively, you can use `$USERNAME`, `$PASSWORD` and `$EMAIL` as described below.
+This will use the `~/.docker/config.json` file which should be prepopulated with credentials by using `docker login <registry>` in the host. Alternatively, you can use `$USERNAME`, `$PASSWORD` as described below.
 
 
 ## Build from Git repository
 
 Run the following docker command:
 
-	docker run --rm -it --privileged -v $HOME/.docker:/.docker:ro -e GIT_REPO=$GIT_REPO -e USERNAME=$USERNAME -e PASSWORD=$PASSWORD -e EMAIL=$EMAIL -e DOCKERFILE_PATH=$DOCKERFILE_PATH tutum/builder $IMAGE_NAME
+	docker run --rm -it --privileged -v $HOME/.docker:/.docker:ro -e GIT_REPO=$GIT_REPO -e USERNAME=$USERNAME -e PASSWORD=$PASSWORD -e DOCKERFILE_PATH=$DOCKERFILE_PATH tutum/builder $IMAGE_NAME
 
 Where:
 
@@ -34,7 +34,6 @@ Where:
 * `$IMAGE_NAME` is the name of the image to create with an optional tag, i.e. `tutum/quickstart-python:latest`
 * `$USERNAME` is the username to use to log into the registry using `docker login`
 * `$PASSWORD` is the password to use to log into the registry using `docker login`
-* `$EMAIL` (optional) is the email to use to log into the registry using `docker login`
 
 If you want to use a SSH key to clone your repository, mount your private SSH key to `/root/.ssh/id_rsa` inside the container, by appending `-v ~/.ssh/id_rsa:/root/.ssh/id_rsa` to the `docker run` command above. Or you can use the environment variable below:
 * `$GIT_ID_RSA` (optional) is the private SSH key to use when cloning the git repository (i.e. `-e GIT_ID_RSA="$(awk 1 ORS='\\n' ~/.ssh/id_rsa)"`)
@@ -44,7 +43,7 @@ If you want to use a SSH key to clone your repository, mount your private SSH ke
 
 Run the following docker command:
 
-	docker run --rm -it --privileged -v $HOME/.docker:/.docker:ro -e TGZ_URL=$TGZ_URL -e DOCKERFILE_PATH=$DOCKERFILE_PATH -e USERNAME=$USERNAME -e PASSWORD=$PASSWORD -e EMAIL=$EMAIL tutum/builder $IMAGE_NAME
+	docker run --rm -it --privileged -v $HOME/.docker:/.docker:ro -e TGZ_URL=$TGZ_URL -e DOCKERFILE_PATH=$DOCKERFILE_PATH -e USERNAME=$USERNAME -e PASSWORD=$PASSWORD tutum/builder $IMAGE_NAME
 
 Where:
 
@@ -53,7 +52,6 @@ Where:
 * `$IMAGE_NAME` is the name of the image to create with an optional tag, i.e. `tutum/hello-world:latest`
 * `$USERNAME` is the username to use to log into the registry using `docker login`
 * `$PASSWORD` is the password to use to log into the registry using `docker login`
-* `$EMAIL` (optional) is the email to use to log into the registry using `docker login`
 
 
 # Tagging

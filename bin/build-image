@@ -76,7 +76,7 @@ elif [ ! -z "$DOCKER_CONFIG" ]; then
 elif [ ! -z "$USERNAME" ] && [ ! -z "$PASSWORD" ]; then
 	REGISTRY=$(echo $IMAGE_NAME | tr "/" "\n" | head -n1 | grep "\." || true)
 	print_msg "   Logging into registry using $USERNAME"
-	docker login -u $USERNAME -p $PASSWORD -e ${EMAIL-no-email@test.com} $REGISTRY | indent
+	docker login -u $USERNAME -p $PASSWORD $REGISTRY | indent
 else
 	print_msg "   WARNING: no \$USERNAME/\$PASSWORD or \$DOCKERCFG or \$DOCKER_CONFIG found - unable to load any credentials for pushing/pulling"
 fi
