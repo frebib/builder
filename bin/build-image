@@ -176,7 +176,7 @@ else
 			TAG_ARGS+="$IMAGE_UNTAGGED:$tag "
 		done
 	fi
-	docker build --rm --force-rm --no-cache -t this ${TAG_ARGS[@]} . 2>&1 | indent
+	docker build --rm --force-rm --no-cache --pull -t this ${TAG_ARGS[@]} . 2>&1 | indent
 fi
 run_hook post_build
 END_DATE=$(date +"%s")
