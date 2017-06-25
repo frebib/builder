@@ -3,7 +3,7 @@ MAINTAINER Joe Groocock <frebib@gmail.com>
 
 ARG GLIBC=2.25-r0
 
-RUN apk add --no-cache bash coreutils curl device-mapper git iptables openssh su-exec tini udev
+RUN apk add --no-cache bash coreutils curl device-mapper gawk git grep iptables openssh sed su-exec tini udev
 
 # Install glibc for docker-compose
 RUN curl -o /etc/apk/keys/sgerrand.rsa.pub https://raw.githubusercontent.com/sgerrand/alpine-pkg-glibc/master/sgerrand.rsa.pub && \
