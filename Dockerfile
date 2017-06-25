@@ -13,7 +13,7 @@ RUN curl -o /etc/apk/keys/sgerrand.rsa.pub https://raw.githubusercontent.com/sge
     ln -s /lib/libc.musl-x86_64.so.1 /usr/glibc-compat/lib
 
 # Download and install docker-compose
-ARG COMPOSE_VERSION=1.12.0
+ARG COMPOSE_VERSION=1.14.0
 ADD https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-linux-x86_64 /usr/local/bin/docker-compose
 RUN chmod 755 /usr/local/bin/docker-compose && rm -fr /var/lib/docker/*
 
