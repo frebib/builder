@@ -1,4 +1,4 @@
-FROM docker:latest
+FROM docker:17.05
 MAINTAINER Joe Groocock <frebib@gmail.com>
 
 ARG GLIBC=2.25-r0
