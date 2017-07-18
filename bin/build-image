@@ -195,36 +195,38 @@ run_hook pre_test
 if test="$(find_hook test)"; then
 	run_hook "$test"
 else
-	TEST="No tests found"
-	shopt -s nullglob
-	for TEST_FILENAME in *{.test.yml,-test.yml}
-	do
-		print_msg "=> Executing tests in $TEST_FILENAME"
-		IMAGES=$(cat ./${TEST_FILENAME} | grep -v "^#" | grep -v "image: *this" | grep "image:" | awk '{print $2}')
-		if [ ! -z "$IMAGES" ]; then
-			echo $IMAGES | xargs -n1 docker pull 2>&1 | indent
-		fi
+  if [ -z "$SKIPTESTS" ]; then
+    TEST="No tests found"
+    shopt -s nullglob
+    for TEST_FILENAME in *{.test.yml,-test.yml}
+    do
+      print_msg "=> Executing tests in $TEST_FILENAME"
+      IMAGES=$(cat ./${TEST_FILENAME} | grep -v "^#" | grep -v "image: *this" | grep "image:" | awk '{print $2}')
+      if [ ! -z "$IMAGES" ]; then
+        echo $IMAGES | xargs -n1 docker pull 2>&1 | indent
+      fi
 
-		PROJECT_NAME=$(echo $HOSTNAME | tr '[:upper:]' '[:lower:]' | sed s/\\.//g | sed s/-//g)
-		docker-compose -f ${TEST_FILENAME} -p $PROJECT_NAME build 2>&1 | indent
+      PROJECT_NAME=$(echo $HOSTNAME | tr '[:upper:]' '[:lower:]' | sed s/\\.//g | sed s/-//g)
+      docker-compose -f ${TEST_FILENAME} -p $PROJECT_NAME build 2>&1 | indent
 
-		if [ -z "$IMAGE_NAME" ]; then
-			rm -f $HOME/.dockercfg
-		fi
+      if [ -z "$IMAGE_NAME" ]; then
+        rm -f $HOME/.dockercfg
+      fi
 
-		docker-compose -f ${TEST_FILENAME} -p $PROJECT_NAME up -d sut 2>&1 | indent
-		docker logs -f ${PROJECT_NAME}_sut_1 2>&1 | indent
-		RET=$(docker wait ${PROJECT_NAME}_sut_1)
-		docker-compose -f ${TEST_FILENAME} -p $PROJECT_NAME kill 2>&1 | indent
-		docker-compose -f ${TEST_FILENAME} -p $PROJECT_NAME rm --force -v 2>&1 | indent
-		if [ "$RET" != "0" ]; then
-			print_msg "   Tests in $TEST_FILENAME FAILED: $RET"
-			exit 1
-		else
-			print_msg "   Tests in $TEST_FILENAME PASSED"
-			unset TEST
-		fi
-	done
+      docker-compose -f ${TEST_FILENAME} -p $PROJECT_NAME up -d sut 2>&1 | indent
+      docker logs -f ${PROJECT_NAME}_sut_1 2>&1 | indent
+      RET=$(docker wait ${PROJECT_NAME}_sut_1)
+      docker-compose -f ${TEST_FILENAME} -p $PROJECT_NAME kill 2>&1 | indent
+      docker-compose -f ${TEST_FILENAME} -p $PROJECT_NAME rm --force -v 2>&1 | indent
+      if [ "$RET" != "0" ]; then
+        print_msg "   Tests in $TEST_FILENAME FAILED: $RET"
+        exit 1
+      else
+        print_msg "   Tests in $TEST_FILENAME PASSED"
+        unset TEST
+      fi
+    done
+  fi
 fi
 run_hook post_test
 END_DATE=$(date +"%s")
