@@ -2,7 +2,7 @@
 
 [frebib/builder][hub]
 =============
-[![](https://images.microbadger.com/badges/image/frebib/builder.svg)](https://microbadger.com/images/frebib/builder)[![Docker Pulls](https://img.shields.io/docker/pulls/frebib/builder.svg)][hub][![Docker Stars](https://img.shields.io/docker/stars/frebib/builder.svg)][hub]
+[![](https://images.microbadger.com/badges/image/frebib/builder.svg)](https://microbadger.com/images/frebib/builder) [![Docker Pulls](https://img.shields.io/docker/pulls/frebib/builder.svg)][hub] [![Docker Stars](https://img.shields.io/docker/stars/frebib/builder.svg)][hub]
 
 A docker image that builds, tests and pushes docker images from code repositories.
 This image is a continuation of [tutum/builder](https://github.com/tutumcloud/builder), updated to use [library/docker](https://github.com/docker-library/docker) base image for Docker-in-Docker based on the [Alpine Linux project](https://hub.docker.com/_/alpine/).
