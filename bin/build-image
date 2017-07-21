@@ -131,7 +131,11 @@ for DIR in ${HOOKS_DIR[@]}; do
 		find "$DIR" -type f -not -name '.*' | xargs -r chmod +x
 	fi
 done
-if [ ! -f Dockerfile ]; then
+if [ -z "$DOCKERFILE" ]; then
+	DOCKERFILE="Dockerfile"
+fi
+
+if [ ! -f "$DOCKERFILE" ]; then
 	print_msg "   WARNING: no Dockerfile detected! Created one using tutum/buildstep"
 	echo "FROM tutum/buildstep" >> Dockerfile
 fi
@@ -163,7 +167,6 @@ fi
 # (1/3) Build step
 #
 
-print_msg "=> Building repository"
 START_DATE=$(date +"%s")
 run_hook pre_build
 if build="$(find_hook build)"; then
@@ -176,6 +179,7 @@ else
 			TAG_ARGS+="$IMAGE_UNTAGGED:$tag "
 		done
 	fi
+	print_msg "=> Building repository with $DOCKERFILE"
 	docker build --rm --force-rm --no-cache --pull -t this ${TAG_ARGS[@]} . 2>&1 | indent
 fi
 run_hook post_build
@@ -190,7 +194,7 @@ START_DATE=$(date +"%s")
 run_hook pre_test
 if test="$(find_hook test)"; then
 	run_hook "$test"
-else
+elif [ -z "$SKIPTESTS" ]; then
 	TEST="No tests found"
 	shopt -s nullglob
 	for TEST_FILENAME in *{.test.yml,-test.yml}
@@ -221,6 +225,8 @@ else
 			unset TEST
 		fi
 	done
+else
+	print_msg "   Skipping tests"
 fi
 run_hook post_test
 END_DATE=$(date +"%s")
