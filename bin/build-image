@@ -300,3 +300,5 @@ $TEST
 $PUSH
 
 EOF
+
+# vim: noet
